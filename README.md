@@ -24,7 +24,6 @@ compile 'org.aspectj:aspectjrt:1.8.9' // aspectJ
 
 ### 一. 使用
 
-`
 
 #### 1. 请参照APP demo的定义注解，示例如下（可以拷贝以下代码到您的项目中）
 ```java
