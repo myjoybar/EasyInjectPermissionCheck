@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context="com.joy.permissioncheck.MainActivity">
+
+
+    <Button
+        android:id="@+id/btn_read_contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="读取联系人"/>
+
+
+    <Button
+        android:id="@+id/btn_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="请求相机权限"/>
+
+
+    <Button
+        android:id="@+id/btn_sdcard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="请求读取SD卡权限"/>
+
+
+</LinearLayout>
