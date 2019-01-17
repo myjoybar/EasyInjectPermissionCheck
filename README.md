@@ -120,12 +120,12 @@ public @interface CheckPermission {
 
 ```
 
-### 一. 流程原理说明
+### 二. 流程原理说明
 
 1. AspectJ在.java文件编译成class字节码的时候，会在方法前面，后面，或者里面加上我们定义的业务逻辑 
 2. AspectJ会在有@CheckPermission注解的方法内，插入checkPermission(final ProceedingJoinPoint joinPoint)方法里面的实现逻辑。
 3. 如上所示：
-    1. 如果某个方法上注解了相关的权限，会通过PermissionRequestActivity.permissionRequest()方法去请求权限
+    1. 如果某个方法上注解了相关的权限，会通过PermissionRequestActivity.permissionRequest()去请求权限
     2. 如果某个方法上注解内生命的权限已经被Granted，则会回调permissionGranted，并执行joinPoint.proceed()，也就意味着，我们的方法会直接执行
     3. 如果某个方法上注解内生命的权限没有被Granted，则会弹出系统的权限请求提示框，用户点击"允许"，则会回调permissionGranted，用户点击拒绝，则会回调permissionDenied。
     4. 在permissionDenied方法中，弹出了一个对话框，提示用户跳转到APP 设置页面，授予相关的权限。当然，你可以在这里定制你自己的业务逻辑。
