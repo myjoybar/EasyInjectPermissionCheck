@@ -37,7 +37,7 @@ public @interface CheckPermission {
 
 ```
 
-#### 2. 请参照APP demo,实现切入点的代码逻辑，示例如下（可以拷贝以下代码到您的项目中，可以在permissionDenied回调方法中定义你自己的逻辑）
+#### 2. 请参照APP demo,实现切入点的代码逻辑，示例如下（可以拷贝以下代码到您的项目中，可以在permissionDenied回调方法中定制你自己的逻辑）
 ```java
     private static final String POINTCUT_METHOD = "execution(@com.joy.permissioncheck.annotation.CheckPermission  * "
          + "*(..))";
@@ -122,14 +122,14 @@ public @interface CheckPermission {
 
 ### 二. 流程原理说明
 
-1. AspectJ在.java文件编译成class字节码的时候，会在方法前面，后面，或者里面加上我们定义的业务逻辑 
+1. AspectJ在.java文件编译成class字节码的时候，会在方法前面，后面，或者里面加上我们定义的业务逻辑,上面的例子中用的是@Around。
 2. AspectJ会在有@CheckPermission注解的方法内，插入checkPermission(final ProceedingJoinPoint joinPoint)方法里面的实现逻辑。
 3. 如上所示：
-    1. 如果某个方法上注解了相关的权限，会通过PermissionRequestActivity.permissionRequest()去请求权限
-    2. 如果某个方法上注解内生命的权限已经被Granted，则会回调permissionGranted，并执行joinPoint.proceed()，也就意味着，我们的方法会直接执行
-    3. 如果某个方法上注解内生命的权限没有被Granted，则会弹出系统的权限请求提示框，用户点击"允许"，则会回调permissionGranted，用户点击拒绝，则会回调permissionDenied。
+    1. 通过signature.getMethod().getAnnotation(CheckPermission.class)获取到声明的权限，然后通过PermissionRequestActivity.permissionRequest()去请求权限
+    2. 如果声明的权限已经被Granted，则会回调permissionGranted，并执行joinPoint.proceed()，也就意味着，我们的方法会直接执行
+    3. 如果声明的权限没有被Granted，则会弹出系统的权限请求提示框，用户点击"允许"，则会回调permissionGranted，用户点击拒绝，则会回调permissionDenied。
     4. 在permissionDenied方法中，弹出了一个对话框，提示用户跳转到APP 设置页面，授予相关的权限。当然，你可以在这里定制你自己的业务逻辑。
-    5. 如果用户已经拒绝过权限，则也会回调permissionDenied
+    5. 如果用户已经拒绝过声明的权限，则也会回调permissionDenied
     
 4. 当然，本demo只是提供一种思路参考
 ## License
