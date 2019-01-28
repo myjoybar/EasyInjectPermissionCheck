@@ -6,7 +6,7 @@ def gitUrl = 'https://github.com/myjoybar/EasyPermissionCheck.git'
 group = "com.joybar.easypermission"
 def packageName = 'EasyPermission'
 def projectDescription = 'A android permission check utils'
-version = "1.0.1"
+version = "1.0.5"
 
 install {
     repositories.mavenInstaller {

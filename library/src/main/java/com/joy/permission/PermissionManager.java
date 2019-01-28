@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,7 @@ public class PermissionManager {
             return true;
         }
         for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager
+            if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager
                     .PERMISSION_GRANTED) {
                 return false;
             }
@@ -53,7 +52,7 @@ public class PermissionManager {
     public List<String> getDeniedPermissions(Activity activity, String[] permissions) {
         List<String> needRequestPermissionList = new ArrayList<>();
         for (String permission : permissions) {
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager
+            if (ActivityCompat.checkSelfPermission(activity, permission) != PackageManager
                     .PERMISSION_GRANTED || ActivityCompat.shouldShowRequestPermissionRationale
                     (activity, permission)) {
                 needRequestPermissionList.add(permission);
@@ -67,6 +66,7 @@ public class PermissionManager {
         if (checkPermissionAllGranted(activity, permissions)) {
            // permissionSuccess(requestCode);
         } else {
+
             List<String> needPermissions = getDeniedPermissions(activity, permissions);
             ActivityCompat.requestPermissions(activity, needPermissions.toArray(new
                     String[needPermissions.size()]), requestCode);

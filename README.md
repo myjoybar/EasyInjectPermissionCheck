@@ -13,7 +13,7 @@
 #####   Add the library to your project build.gradle
 
 ```gradle
-compile 'com.joybar.easypermission:library:1.0.1'
+compile 'com.joybar.easypermission:library:1.0.5'
 compile 'org.aspectj:aspectjrt:1.8.9' // aspectJ
 
 ```
@@ -37,62 +37,65 @@ public @interface CheckPermission {
 
 ```
 
-#### 2. 请参照APP demo,实现切入点的代码逻辑，示例如下（可以拷贝以下代码到您的项目中，可以在permissionDenied回调方法中定制你自己的逻辑）
+#### 2. 请参照APP demo,实现切入点的代码逻辑，示例如下（可以直接拷贝以下代码到您的项目中）
 ```java
-    private static final String POINTCUT_METHOD = "execution(@com.joy.permissioncheck.annotation.CheckPermission  * "
-         + "*(..))";
+
+	@Around("executionCheckPermission()")
+	public Object checkPermission(final ProceedingJoinPoint joinPoint) throws Throwable {
+		Log.d(TAG, "start  checkPermission");
+		MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+		CheckPermission checkPermission = signature.getMethod().getAnnotation(CheckPermission.class);
+		if (checkPermission != null) {
+			final String[] permissions = checkPermission.permissions();
+			final int requestCode = checkPermission.requestCode();
+			if (joinPoint.getThis() instanceof Context) {
+				final Context context = (Context) joinPoint.getThis();
+				final Class<?> targetClass = context.getClass();
+				PermissionRequestActivity.permissionRequest(context, permissions, requestCode, new IPermission() {
+
+					@Override
+					public void permissionGranted() {
+						Log.d(TAG, Arrays.toString(permissions) + " had granted ，requestCode=" + requestCode);
+						try {
+							joinPoint.proceed();
+						} catch (Throwable throwable) {
+							throwable.printStackTrace();
+						}
+					}
+
+					@Override
+					public void permissionDenied(int requestCode, String[] permissions) {
+						Log.d(TAG, Arrays.toString(permissions) + " had denied ，requestCode=" + requestCode);
+						invokeMethod(context, targetClass, requestCode, permissions, PERMISSION_DENIED_METHOD, null);
+					}
+
+					@Override
+					public void permissionDeniedAndNeverAsk(int requestCode, String[] permissions) {
+						Log.d(TAG, Arrays.toString(permissions) + " had permissionDenied And NeverAsk ，requestCode=" + requestCode);
+						invokeMethod(context, targetClass, requestCode, permissions, PERMISSION_DENIED_AND_NEVER_ASK_METHOD, null);
+
+					}
+
+					@Override
+					public void showRationale(int requestCode, String[] permissions, PermissionRequest permissionRequest) {
+						Log.d(TAG, Arrays.toString(permissions) + " showRationale ，requestCode=" + requestCode);
+						invokeMethod(context, targetClass, requestCode, permissions, PERMISSION_SHOW_RATIONALE, permissionRequest);
+					}
+				});
+			} else {
+				Log.d(TAG, "The context type must be Context");
+			}
+
+		}
+		// Object  result = joinPoint.proceed();
+		return null;
+	}
 
 
-    @Pointcut(POINTCUT_METHOD)
-    public void executionCheckPermission() {
-    }
-
-    @Around("executionCheckPermission()")
-    public Object checkPermission(final ProceedingJoinPoint joinPoint) throws Throwable {
-        Log.d(TAG,"start  checkPermission");
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        CheckPermission checkPermission = signature.getMethod().getAnnotation(CheckPermission.class);
-
-        if (checkPermission != null) {
-            final String[] permissions = checkPermission.permissions();
-            final int requestCode = checkPermission.requestCode();
-            if (joinPoint.getThis() instanceof Activity) {
-                final Activity activity = (Activity) joinPoint.getThis();
-                PermissionRequestActivity.permissionRequest(activity, permissions, requestCode, new IPermission() {
-
-                    @Override
-                    public void permissionGranted() {
-                        Log.d(TAG, Arrays.toString(permissions)+" had granted ，requestCode="+requestCode);
-                        try {
-                            joinPoint.proceed();
-                        } catch (Throwable throwable) {
-                            throwable.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void permissionDenied(int requestCode, String[] permissions) {
-                        Log.d(TAG, Arrays.toString(permissions)+" had denied ，requestCode="+requestCode);
-                        PermissionGuide.showTipsDialog(activity,permissions);
-                    }
-
-                    @Override
-                    public void permissionCanceled(int requestCode) {
-                        Log.d(TAG, Arrays.toString(permissions)+" had canceled ，requestCode="+requestCode);
-
-                    }
-                });
-            }else{
-                Log.d(TAG,"The context type must be Activity");
-            }
-
-        }
-       // Object  result = joinPoint.proceed();
-        return null ;
-    }
 
 
 ```
+
 #### 3. 在具体需要动态权限检查的地方，如下使用
 
 ```java
@@ -120,6 +123,47 @@ public @interface CheckPermission {
 
 ```
 
+#### 4. 继承IPermissionCallback，并在以下三个回调方法中实现逻辑
+
+```java
+
+	@Override
+	public void permissionDenied(int requestCode, String[] permissions) {
+		//申请权限被拒接
+		
+	}
+
+	@Override
+	public void permissionDeniedAndNeverAsk(int requestCode, String[] permissions) {
+		// 申请权限被拒接并且用户点击了"不再询问"
+	}
+
+	@Override
+	public void showRationale(int requestCode, String[] permissions, final PermissionRequest permissionRequest) {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setTitle(activity.getString(com.joy.permission.R.string.tip));
+		builder.setMessage("软件部分功能需要请求您的手机权限，请允许以下权限："+ Arrays.toString(permissions));
+		builder.setPositiveButton(activity.getString(com.joy.permission.R.string.confirm), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				permissionRequest.proceed();
+			}
+		});
+		builder.setNegativeButton(activity.getString(com.joy.permission.R.string.cancel), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				permissionRequest.cancel();
+			}
+		});
+
+		builder.show();
+	}	
+
+```
+
+
+
 ### 二. 流程原理说明
 
 1. AspectJ在.java文件编译成class字节码的时候，会在方法前面，后面，或者里面加上我们定义的业务逻辑,上面的例子中用的是@Around。
@@ -127,10 +171,8 @@ public @interface CheckPermission {
 3. 如上所示：
     1. 通过signature.getMethod().getAnnotation(CheckPermission.class)获取到声明的权限，然后通过PermissionRequestActivity.permissionRequest()去请求权限
     2. 如果声明的权限已经被Granted，则会回调permissionGranted，并执行joinPoint.proceed()，也就意味着，我们的方法会直接执行
-    3. 如果声明的权限没有被Granted，则会弹出系统的权限请求提示框，用户点击"允许"，则会回调permissionGranted，用户点击拒绝，则会回调permissionDenied。
-    4. 在permissionDenied方法中，弹出了一个对话框，提示用户跳转到APP 设置页面，授予相关的权限。当然，你可以在这里定制你自己的业务逻辑。
-    5. 如果用户已经拒绝过声明的权限，则也会回调permissionDenied
-    
+    3. 如果声明的权限被拒绝，则会回调permissionDenied方法，并通过反射执行实现类中相应的方法
+    4. 另外两个回调方法permissionDeniedAndNeverAsk和showRationale的处理逻辑和上面一致   
 4. 当然，本demo只是提供一种思路参考
 ## License
 

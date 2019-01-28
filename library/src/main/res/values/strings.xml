@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Library</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="tip">Tip</string>
