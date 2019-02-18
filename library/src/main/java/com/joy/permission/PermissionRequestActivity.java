@@ -132,4 +132,8 @@ public class PermissionRequestActivity extends AppCompatActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 	}
+
+	@Override
+	public void onBackPressed() {
+	}
 }

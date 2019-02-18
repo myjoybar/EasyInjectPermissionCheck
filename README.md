@@ -13,7 +13,7 @@
 #####   Add the library to your project build.gradle
 
 ```gradle
-compile 'com.joybar.easypermission:library:1.0.5'
+compile 'com.joybar.easypermission:library:1.0.6'
 compile 'org.aspectj:aspectjrt:1.8.9' // aspectJ
 
 ```
