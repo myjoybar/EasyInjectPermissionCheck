@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CheckPermission {
     String[] permissions();
-    int requestCode();
+    int requestCode() default 1;
+    String staticClassName() default "";
 }

@@ -67,11 +67,10 @@ public class PermissionRequestActivity extends AppCompatActivity {
 	}
 
 
-
 	private void checkShowRationale() {
 		boolean hasRequestedPermission = PermissionManager.shouldShowRequestPermissionRationale(this, permissions);
 		if (hasRequestedPermission && permissionListener != null) {
-			permissionListener.showRationale(requestCode, permissions,  new PermissionRequest() {
+			permissionListener.showRationale(requestCode, permissions, new PermissionRequest() {
 				@Override
 				public void proceed() {
 					requestPermission();
@@ -93,7 +92,9 @@ public class PermissionRequestActivity extends AppCompatActivity {
 	private void requestPermission() {
 
 		if (PermissionManager.getInstance().checkPermissionAllGranted(this, permissions)) {
-			permissionListener.permissionGranted();
+			if (null != permissionListener) {
+				permissionListener.permissionGranted();
+			}
 			finish();
 		} else {
 			PermissionManager.getInstance().requestPermissions(this, permissions, requestCode);
@@ -124,6 +125,7 @@ public class PermissionRequestActivity extends AppCompatActivity {
 		}
 
 	}
+
 	public void finishPermissionRequestActivity() {
 		finish();
 	}
