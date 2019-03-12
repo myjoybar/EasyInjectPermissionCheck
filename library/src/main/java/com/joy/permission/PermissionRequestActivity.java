@@ -79,6 +79,7 @@ public class PermissionRequestActivity extends AppCompatActivity {
 				@Override
 				public void cancel() {
 					finishPermissionRequestActivity();
+					clearPermissionListener();
 				}
 			});
 		} else {
@@ -94,6 +95,7 @@ public class PermissionRequestActivity extends AppCompatActivity {
 		if (PermissionManager.getInstance().checkPermissionAllGranted(this, permissions)) {
 			if (null != permissionListener) {
 				permissionListener.permissionGranted();
+				clearPermissionListener();
 			}
 			finish();
 		} else {
@@ -109,6 +111,7 @@ public class PermissionRequestActivity extends AppCompatActivity {
 				if (permissionListener != null) {
 					permissionListener.permissionGranted();
 					finishPermissionRequestActivity();
+					clearPermissionListener();
 				}
 			} else {
 				finishPermissionRequestActivity();
@@ -116,8 +119,10 @@ public class PermissionRequestActivity extends AppCompatActivity {
 					boolean isNeverAskAgain = !PermissionManager.shouldShowRequestPermissionRationale(PermissionRequestActivity.this, permissions);
 					if (isNeverAskAgain) {
 						permissionListener.permissionDeniedAndNeverAsk(requestCode, permissions);
+						clearPermissionListener();
 					} else {
 						permissionListener.permissionDenied(requestCode, permissions);
+						clearPermissionListener();
 					}
 
 				}
@@ -138,4 +143,9 @@ public class PermissionRequestActivity extends AppCompatActivity {
 	@Override
 	public void onBackPressed() {
 	}
+
+	public void clearPermissionListener() {
+		permissionListener = null;
+	}
+
 }
